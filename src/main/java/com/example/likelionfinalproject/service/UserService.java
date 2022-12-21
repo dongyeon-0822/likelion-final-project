@@ -5,6 +5,7 @@ import com.example.likelionfinalproject.exception.AppException;
 import com.example.likelionfinalproject.exception.ErrorCode;
 import com.example.likelionfinalproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,17 +13,18 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder encoder;
 
     public String join(String userName, String password) {
         // userName 중복 체크
         userRepository.findByUserName(userName)
                 .ifPresent(user -> {
-                    throw new AppException(ErrorCode.USERNAME_DUPLICATED, userName + "이미 존재합니다!");
+                    throw new AppException(ErrorCode.DUPLICATED_USER_NAME, userName + "이미 존재합니다!");
                 });
 
         User user = User.builder()
                 .userName(userName)
-                .password(password)
+                .password(encoder.encode(password))
                 .build();
         userRepository.save(user);
 
