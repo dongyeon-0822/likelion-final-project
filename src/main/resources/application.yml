@@ -17,3 +17,7 @@ spring:
     url: SPRING_DATASOURCE_URL
     username: root
     password: SPRING_DATASOURCE_PASSWORD
+
+jwt:
+  token:
+    secret: JWT_TOKEN_SECRET

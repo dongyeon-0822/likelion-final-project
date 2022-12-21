@@ -4,7 +4,10 @@ import com.example.likelionfinalproject.domain.entity.User;
 import com.example.likelionfinalproject.exception.AppException;
 import com.example.likelionfinalproject.exception.ErrorCode;
 import com.example.likelionfinalproject.repository.UserRepository;
+import com.example.likelionfinalproject.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +17,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
+
+    @Value("${jwt.token.secret}")
+    private String key;
+    private Long expireTimeMs = 1000 * 60 * 60l;
 
     public String join(String userName, String password) {
         // userName 중복 체크
@@ -40,8 +47,8 @@ public class UserService {
             throw new AppException(ErrorCode.INVALID_PASSWORD, String.format("password를 잘못 입력했습니다. "));
         }
 
-//        // 두가지 확인 중 예외 안났으면 Token 발행
-//        return JwtTokenUtil.createToken(userName, secretKey, expireTimeMs);
-        return "token";
+        // 두가지 확인 중 예외 안났으면 Token 발행
+        String token = JwtTokenUtil.createToken(selectedUser.getUserName(), key, expireTimeMs);
+        return token;
     }
 }
