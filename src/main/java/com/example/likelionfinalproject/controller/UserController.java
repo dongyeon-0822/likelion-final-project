@@ -1,7 +1,11 @@
 package com.example.likelionfinalproject.controller;
 
-import com.example.likelionfinalproject.domain.dto.UserJoinRequest;
-import com.example.likelionfinalproject.domain.dto.UserLoginRequest;
+import com.example.likelionfinalproject.domain.entity.User;
+import com.example.likelionfinalproject.domain.request.UserJoinRequest;
+import com.example.likelionfinalproject.domain.request.UserLoginRequest;
+import com.example.likelionfinalproject.domain.response.Response;
+import com.example.likelionfinalproject.domain.response.UserJoinResponse;
+import com.example.likelionfinalproject.domain.response.UserLoginResponse;
 import com.example.likelionfinalproject.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +22,14 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/join")
-    public ResponseEntity<String> join(@RequestBody UserJoinRequest dto) {
-        userService.join(dto.getUserName(), dto.getPassword());
-        return ResponseEntity.ok().body("회원가입 성공");
+    public ResponseEntity<Response> join(@RequestBody UserJoinRequest dto) {
+        UserJoinResponse userJoinResponse = userService.join(dto.getUserName(), dto.getPassword());
+        return ResponseEntity.ok().body(Response.success(userJoinResponse));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UserLoginRequest dto) {
-        String token = userService.login(dto.getUserName(), dto.getPassword());
-        return ResponseEntity.ok().body(token);
+    public ResponseEntity<Response> login(@RequestBody UserLoginRequest dto) {
+        UserLoginResponse userLoginResponse = userService.login(dto.getUserName(), dto.getPassword());
+        return ResponseEntity.ok().body(Response.success(userLoginResponse));
     }
 }

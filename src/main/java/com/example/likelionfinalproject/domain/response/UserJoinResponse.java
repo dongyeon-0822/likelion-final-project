@@ -1,13 +1,13 @@
-package com.example.likelionfinalproject.domain.dto;
+package com.example.likelionfinalproject.domain.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
-public class UserJoinRequest {
+public class UserJoinResponse {
+    private Long id;
     private String userName;
-    private String password;
 }

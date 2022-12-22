@@ -1,6 +1,8 @@
 package com.example.likelionfinalproject.service;
 
 import com.example.likelionfinalproject.domain.entity.User;
+import com.example.likelionfinalproject.domain.response.UserJoinResponse;
+import com.example.likelionfinalproject.domain.response.UserLoginResponse;
 import com.example.likelionfinalproject.exception.AppException;
 import com.example.likelionfinalproject.exception.ErrorCode;
 import com.example.likelionfinalproject.repository.UserRepository;
@@ -22,22 +24,22 @@ public class UserService {
     private String key;
     private Long expireTimeMs = 1000 * 60 * 60l;
 
-    public String join(String userName, String password) {
+    public UserJoinResponse join(String userName, String password) {
         // userName 중복 체크
         userRepository.findByUserName(userName)
                 .ifPresent(user -> {
-                    throw new AppException(ErrorCode.DUPLICATED_USER_NAME, userName + "이미 존재합니다!");
+                    throw new AppException(ErrorCode.DUPLICATED_USER_NAME, ErrorCode.DUPLICATED_USER_NAME.getMessage());
                 });
 
         User user = User.builder()
                 .userName(userName)
                 .password(encoder.encode(password))
                 .build();
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        return "SUCCESS";
+        return new UserJoinResponse(savedUser.getId(), savedUser.getUserName());
     }
-    public String login(String userName, String password) {
+    public UserLoginResponse login(String userName, String password) {
         // userName 있는지 여부 확인, 없으면 NOT_FOUND 에러 발생
         User selectedUser = userRepository.findByUserName(userName)
                 .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, String.format("%s는 가입된 적이 없습니다.", userName)));
@@ -49,6 +51,6 @@ public class UserService {
 
         // 두가지 확인 중 예외 안났으면 Token 발행
         String token = JwtTokenUtil.createToken(selectedUser.getUserName(), key, expireTimeMs);
-        return token;
+        return new UserLoginResponse(token);
     }
 }
