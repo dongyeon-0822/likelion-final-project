@@ -17,13 +17,11 @@
 # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
 
 stages:
-  - build
-  - dockerbuild-push
-
-stages:
   - dockerbuild-push
 
 package:
+  only:
+    - main
   image: docker:latest
   stage: dockerbuild-push
   services:
