@@ -20,7 +20,7 @@ public class SecurityConfig {
     private final UserService userService;
 
     @Value("${jwt.token.secret}")
-    private final String key;
+    private String key;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws  Exception {
@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .cors().and()
                 .authorizeRequests()
                 .antMatchers("/api/v1/users/join", "/api/v1/users/login").permitAll()
-                .antMatchers(HttpMethod.POST,"/api/v1/posts/*", "/api/v1/posts").authenticated()
+                .antMatchers(HttpMethod.POST, "/api/v1/**").authenticated()
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
