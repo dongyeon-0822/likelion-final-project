@@ -37,7 +37,7 @@ public class UserService {
                 .build();
         User savedUser = userRepository.save(user);
 
-        return new UserJoinResponse(savedUser.getId(), savedUser.getUserName());
+        return new UserJoinResponse(savedUser.getUserId(), savedUser.getUserName());
     }
     public UserLoginResponse login(String userName, String password) {
         // userName 있는지 여부 확인, 없으면 NOT_FOUND 에러 발생

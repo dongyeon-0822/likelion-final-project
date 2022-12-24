@@ -15,10 +15,10 @@ import javax.persistence.Id;
 @Getter
 @NoArgsConstructor
 @Builder
-public class User {
+public class User extends BaseTimeEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userId;
     private String userName;
     private String password;
 }
