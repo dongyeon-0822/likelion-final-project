@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class PostAddRequest {
+public class PostRequest {
     private String title;
     private String body;
 }
