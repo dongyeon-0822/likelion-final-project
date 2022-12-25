@@ -6,6 +6,8 @@ import com.example.likelionfinalproject.domain.response.PostResponse;
 import com.example.likelionfinalproject.domain.response.Response;
 import com.example.likelionfinalproject.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +22,12 @@ public class PostController {
     public ResponseEntity<Response> addPost(Authentication authentication, @RequestBody PostRequest postRequest) {
         PostDto postDto = postService.addPost(authentication.getName(), postRequest);
         return ResponseEntity.ok().body(Response.success(new PostResponse("포스트 등록 완료", postDto.getId())));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<Response> getPostList(Pageable pageable) {
+        Page<PostDto> postDtoPage = postService.getPostList(pageable);
+        return ResponseEntity.ok().body(Response.success(postDtoPage));
     }
 
     @GetMapping("/{id}")

@@ -9,6 +9,8 @@ import com.example.likelionfinalproject.exception.ErrorCode;
 import com.example.likelionfinalproject.repository.PostRepository;
 import com.example.likelionfinalproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -60,5 +62,11 @@ public class PostService {
 
         postRepository.deleteById(postId);
         return postId;
+    }
+
+    public Page<PostDto> getPostList(Pageable pageable) {
+        Page<Post> postPage = postRepository.findAll(pageable);
+        Page<PostDto> postDtoPage = postPage.map(post -> PostDto.toPostDto(post));
+        return postDtoPage;
     }
 }
