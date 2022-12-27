@@ -228,4 +228,47 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.postId").exists());
 
     }
+    @Test
+    @DisplayName("포스트 삭제 실패 1 - 인증 실패")
+    @WithAnonymousUser
+    void deletePost_fail1() throws Exception {
+        when(postService.deletePost(any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage()));
+
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+
+    }
+    @Test
+    @DisplayName("포스트 삭제 실패 2 - 작성자 불일치")
+    @WithMockUser
+    void deletePost_fail2() throws Exception {
+        when(postService.deletePost(any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage()));
+
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.INVALID_PERMISSION.getHttpStatus().value()));
+
+    }
+
+    @Test
+    @DisplayName("포스트 삭제 실패 3 - DB 에러")
+    @WithMockUser
+    void deletePost_fail3() throws Exception {
+        when(postService.deletePost(any(),any()))
+                .thenThrow(new AppException(ErrorCode.DATABASE_ERROR, ErrorCode.DATABASE_ERROR.getMessage()));
+
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.DATABASE_ERROR.getHttpStatus().value()));
+
+    }
 }
