@@ -2,6 +2,8 @@ package com.example.likelionfinalproject.controller;
 
 import com.example.likelionfinalproject.domain.dto.PostDto;
 import com.example.likelionfinalproject.domain.request.PostRequest;
+import com.example.likelionfinalproject.exception.AppException;
+import com.example.likelionfinalproject.exception.ErrorCode;
 import com.example.likelionfinalproject.service.PostService;
 import com.example.likelionfinalproject.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -59,6 +62,30 @@ class PostControllerTest {
             .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.message").exists());
 
+    }
+
+    @Test
+    @DisplayName("포스트 등록 실패 - 로그인 하지 않은 경우")
+    @WithAnonymousUser
+    void addPost_fail1() throws Exception {
+        PostRequest postRequest = PostRequest.builder()
+                .title("title")
+                .body("body")
+                .build();
+
+        PostDto postDto = PostDto.builder()
+                .id(0l)
+                .build();
+
+        when(postService.addPost(any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION,ErrorCode.INVALID_PASSWORD.getMessage()));
+
+        mockMvc.perform(post("/api/v1/posts")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(postRequest)))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
