@@ -11,6 +11,6 @@ public class HelloController {
 
     @GetMapping
     public ResponseEntity<String> hello() {
-        return ResponseEntity.ok().body("happy_new_year");
+        return ResponseEntity.ok().body("강동연");
     }
 }
