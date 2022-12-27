@@ -9,9 +9,14 @@ import com.example.likelionfinalproject.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -21,6 +26,7 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -113,6 +119,27 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.createdAt").exists())
                 .andExpect(jsonPath("$.result.lastModifiedAt").exists());
 
+    }
+
+    @Test
+    @DisplayName("포스트 리스트 조회 성공")
+    @WithMockUser
+    void getPostList() throws Exception {
+
+        mockMvc.perform(get("/api/v1/posts")
+                        .param("pageNumber", "0")
+                        .param("pageSize", "20")
+                        .param("sort", "id,desc"))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(postService).getPostList(pageableCaptor.capture());
+        PageRequest pageable = (PageRequest) pageableCaptor.getValue();
+
+        assertEquals(0, pageable.getPageNumber());
+        assertEquals(20, pageable.getPageSize());
+        assertEquals(Sort.by("id","desc"), pageable.withSort(Sort.by("id", "desc")).getSort());
     }
 
     @Test
