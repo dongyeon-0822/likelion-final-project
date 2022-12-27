@@ -62,7 +62,8 @@ class PostControllerTest {
                 .content(objectMapper.writeValueAsBytes(postRequest)))
             .andDo(print())
             .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.message").exists());
+            .andExpect(jsonPath("$.result.message").exists())
+            .andExpect(jsonPath("$.result.postId").exists());
     }
 
     @Test
@@ -72,10 +73,6 @@ class PostControllerTest {
         PostRequest postRequest = PostRequest.builder()
                 .title("title")
                 .body("body")
-                .build();
-
-        PostDto postDto = PostDto.builder()
-                .id(0l)
                 .build();
 
         when(postService.addPost(any(),any()))
@@ -119,7 +116,36 @@ class PostControllerTest {
     }
 
     @Test
-    void editPost() {
+    @DisplayName("포스트 수정 성공")
+    @WithMockUser
+    void editPost() throws Exception {
+        PostRequest postRequest = PostRequest.builder()
+                .title("title")
+                .body("body")
+                .build();
+
+        PostDto postDto = PostDto.builder()
+                .id(1l)
+                .title("title")
+                .body("body")
+                .userName("user")
+                .createdAt(LocalDateTime.now())
+                .lastModifiedAt(LocalDateTime.now())
+                .build();
+
+
+        when(postService.editPost(any(),any(),any()))
+                .thenReturn(postDto);
+
+        mockMvc.perform(put("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(postRequest)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.message").exists())
+                .andExpect(jsonPath("$.result.postId").exists());
+
     }
 
     @Test
