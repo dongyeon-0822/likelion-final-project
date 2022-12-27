@@ -149,6 +149,69 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("포스트 수정 실패 1 - 인증 실패")
+    @WithAnonymousUser
+    void editPost_fail1() throws Exception {
+        PostRequest postRequest = PostRequest.builder()
+                .title("title")
+                .body("body")
+                .build();
+
+        when(postService.editPost(any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage()));
+
+        mockMvc.perform(put("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(postRequest)))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+
+    }
+    @Test
+    @DisplayName("포스트 수정 실패 2 - 작성자 불일치")
+    @WithMockUser
+    void editPost_fail2() throws Exception {
+        PostRequest postRequest = PostRequest.builder()
+                .title("title")
+                .body("body")
+                .build();
+
+        when(postService.editPost(any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage()));
+
+        mockMvc.perform(put("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(postRequest)))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.INVALID_PERMISSION.getHttpStatus().value()));
+
+    }
+
+    @Test
+    @DisplayName("포스트 수정 실패 3 - DB 에러")
+    @WithMockUser
+    void editPost_fail3() throws Exception {
+        PostRequest postRequest = PostRequest.builder()
+                .title("title")
+                .body("body")
+                .build();
+
+        when(postService.editPost(any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.DATABASE_ERROR, ErrorCode.DATABASE_ERROR.getMessage()));
+
+
+        mockMvc.perform(put("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(postRequest)))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.DATABASE_ERROR.getHttpStatus().value()));
+
+    }
+
+    @Test
     @DisplayName("포스트 삭제 성공")
     @WithMockUser
     void deletePost() throws Exception {
