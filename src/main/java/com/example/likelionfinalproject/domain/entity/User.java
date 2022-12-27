@@ -1,9 +1,6 @@
 package com.example.likelionfinalproject.domain.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,6 +10,7 @@ import javax.persistence.Id;
 @Entity
 @AllArgsConstructor
 @Getter
+@Setter
 @NoArgsConstructor
 @Builder
 public class User extends BaseTimeEntity{
