@@ -149,6 +149,20 @@ class PostControllerTest {
     }
 
     @Test
-    void deletePost() {
+    @DisplayName("포스트 삭제 성공")
+    @WithMockUser
+    void deletePost() throws Exception {
+        Long postId = 1l;
+
+        when(postService.deletePost(any(),any()))
+                .thenReturn(postId);
+
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.message").exists())
+                .andExpect(jsonPath("$.result.postId").exists());
+
     }
 }
