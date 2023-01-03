@@ -55,10 +55,21 @@ public class PostController {
     }
 
     // Comment CRUD
-    @PostMapping("/{id}/comments")
-    public ResponseEntity<Response> addComment(Authentication authentication, @PathVariable Long id, @RequestBody CommentRequest commentRequest) {
-        CommentDto commentDto = commentService.addComment(authentication.getName(), id, commentRequest);
+    @PostMapping("/{postId}/comments")
+    public ResponseEntity<Response> addComment(Authentication authentication, @PathVariable Long postId, @RequestBody CommentRequest commentRequest) {
+        CommentDto commentDto = commentService.addComment(authentication.getName(), postId, commentRequest);
         return ResponseEntity.ok().body(Response.success(CommentResponse.toCommentResponse(commentDto)));
     }
 
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<Response> getCommentList(Pageable pageable, @PathVariable Long postId) {
+        Page<CommentDto> CommentDtoPage = commentService.getCommentList(pageable, postId);
+        return ResponseEntity.ok().body(Response.success(CommentDtoPage));
+    }
+
+    @GetMapping("/{postId}/comments/{commentId}")
+    public ResponseEntity<Response> getComment(@PathVariable Long postId, @PathVariable Long commentId) {
+        CommentDto commentDto = commentService.getComment(postId, commentId);
+        return ResponseEntity.ok().body(Response.success(CommentResponse.toCommentResponse(commentDto)));
+    }
 }

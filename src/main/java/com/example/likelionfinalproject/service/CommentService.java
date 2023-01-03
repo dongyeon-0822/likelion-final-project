@@ -13,6 +13,8 @@ import com.example.likelionfinalproject.repository.CommentRepository;
 import com.example.likelionfinalproject.repository.PostRepository;
 import com.example.likelionfinalproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,5 +32,19 @@ public class CommentService {
                 .orElseThrow(()-> new AppException(ErrorCode.POST_NOT_FOUND, ErrorCode.POST_NOT_FOUND.getMessage()));
         Comment comment = commentRepository.save(Comment.of(commentRequest.getComment(),user,post));
         return CommentDto.toCommentDto(comment);
+    }
+
+    public CommentDto getComment(Long postId, Long commentId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(()-> new AppException(ErrorCode.POST_NOT_FOUND, ErrorCode.POST_NOT_FOUND.getMessage()));
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(()-> new AppException(ErrorCode.COMMENT_NOT_FOUND, ErrorCode.COMMENT_NOT_FOUND.getMessage()));
+        return CommentDto.toCommentDto(comment);
+    }
+
+    public Page<CommentDto> getCommentList(Pageable pageable, Long postId) {
+        Page<Comment> commentPage = commentRepository.findAllByPostId(postId, pageable);
+        Page<CommentDto> commentDtoPage = commentPage.map(comment -> CommentDto.toCommentDto(comment));
+        return commentDtoPage;
     }
 }
