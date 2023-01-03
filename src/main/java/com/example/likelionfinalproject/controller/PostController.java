@@ -93,17 +93,26 @@ public class PostController {
     // Likes
     @PostMapping("{postId}/likes")
     public ResponseEntity<Response> likePost(Authentication authentication, @PathVariable Long postId) {
-        likeService.likePost(authentication.getName(),postId);
+        likeService.likePost(authentication.getName(), postId);
         return ResponseEntity.ok().body(Response.success("좋아요를 눌렀습니다"));
     }
+
     @GetMapping("{postId}/likes")
     public ResponseEntity<Response> countLikes(@PathVariable Long postId) {
         Long likes = likeService.countLikes(postId);
         return ResponseEntity.ok().body(Response.success(likes));
     }
+
     @DeleteMapping("{postId}/likes")
     public ResponseEntity<Response> unlikePost(Authentication authentication, @PathVariable Long postId) {
-        likeService.unlikePost(authentication.getName(),postId);
+        likeService.unlikePost(authentication.getName(), postId);
         return ResponseEntity.ok().body(Response.success("좋아요를 취소했습니다"));
+    }
+
+    // My feed
+    @GetMapping("/my")
+    public ResponseEntity<Response> getMyFeed(Authentication authentication, Pageable pageable) {
+        Page<PostDto> postDtoPage = postService.getMyFeed(pageable, authentication.getName());
+        return ResponseEntity.ok().body(Response.success(postDtoPage));
     }
 }
