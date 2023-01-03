@@ -9,6 +9,7 @@ import com.example.likelionfinalproject.domain.response.CommentResponse;
 import com.example.likelionfinalproject.domain.response.PostResponse;
 import com.example.likelionfinalproject.domain.response.Response;
 import com.example.likelionfinalproject.service.CommentService;
+import com.example.likelionfinalproject.service.LikeService;
 import com.example.likelionfinalproject.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
     private final PostService postService;
     private final CommentService commentService;
+    private final LikeService likeService;
 
     // Post CRUD
     @PostMapping("")
@@ -86,5 +88,12 @@ public class PostController {
     public ResponseEntity<Response> deleteComment(Authentication authentication, @PathVariable Long postId, @PathVariable Long commentId) {
         Long deletedCommentId = commentService.deleteComment(authentication.getName(), postId, commentId);
         return ResponseEntity.ok().body(Response.success(new CommentDeleteResponse("댓글 삭제 완료", deletedCommentId)));
+    }
+
+    // Likes
+    @PostMapping("{postId}/likes")
+    public ResponseEntity<Response> likePost(Authentication authentication, @PathVariable Long postId) {
+        likeService.likePost(authentication.getName(),postId);
+        return ResponseEntity.ok().body(Response.success("좋아요를 눌렀습니다"));
     }
 }
