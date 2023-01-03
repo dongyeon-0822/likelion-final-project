@@ -4,6 +4,7 @@ import com.example.likelionfinalproject.domain.dto.CommentDto;
 import com.example.likelionfinalproject.domain.dto.PostDto;
 import com.example.likelionfinalproject.domain.request.CommentRequest;
 import com.example.likelionfinalproject.domain.request.PostRequest;
+import com.example.likelionfinalproject.domain.response.CommentDeleteResponse;
 import com.example.likelionfinalproject.domain.response.CommentResponse;
 import com.example.likelionfinalproject.domain.response.PostResponse;
 import com.example.likelionfinalproject.domain.response.Response;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -78,5 +80,11 @@ public class PostController {
     public ResponseEntity<Response> editComment(Authentication authentication, @PathVariable Long postId, @PathVariable Long commentId, @RequestBody CommentRequest commentRequest) {
         CommentDto commentDto = commentService.editComment(authentication.getName(), postId, commentId, commentRequest);
         return ResponseEntity.ok().body(Response.success(CommentResponse.toCommentResponse(commentDto)));
+    }
+
+    @DeleteMapping("{postId}/comments/{commentId}")
+    public ResponseEntity<Response> deleteComment(Authentication authentication, @PathVariable Long postId, @PathVariable Long commentId) {
+        Long deletedCommentId = commentService.deleteComment(authentication.getName(), postId, commentId);
+        return ResponseEntity.ok().body(Response.success(new CommentDeleteResponse("댓글 삭제 완료", deletedCommentId)));
     }
 }
