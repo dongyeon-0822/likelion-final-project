@@ -38,4 +38,16 @@ public class LikeService {
         Long likes = likeRepository.countByPost(post);
         return likes;
     }
+
+    public void unlikePost(String userName, Long postId) {
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(()-> new AppException(ErrorCode.USERNAME_NOT_FOUND, ErrorCode.USERNAME_NOT_FOUND.getMessage()));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(()-> new AppException(ErrorCode.POST_NOT_FOUND, ErrorCode.POST_NOT_FOUND.getMessage()));
+
+        Likes likes = likeRepository.findByUserAndPost(user, post)
+                        .orElseThrow(()-> new AppException(ErrorCode.LIKES_NOT_FOUND, ErrorCode.LIKES_NOT_FOUND.getMessage()));
+        likeRepository.delete(likes);
+    }
 }

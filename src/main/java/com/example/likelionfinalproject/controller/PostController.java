@@ -101,4 +101,9 @@ public class PostController {
         Long likes = likeService.countLikes(postId);
         return ResponseEntity.ok().body(Response.success(likes));
     }
+    @DeleteMapping("{postId}/likes")
+    public ResponseEntity<Response> unlikePost(Authentication authentication, @PathVariable Long postId) {
+        likeService.unlikePost(authentication.getName(),postId);
+        return ResponseEntity.ok().body(Response.success("좋아요를 취소했습니다"));
+    }
 }
