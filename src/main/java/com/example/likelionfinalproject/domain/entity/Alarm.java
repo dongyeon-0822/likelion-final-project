@@ -29,4 +29,14 @@ public class Alarm extends BaseTimeEntity{
 
     private String text;
     private boolean isDeleted = Boolean.FALSE;
+
+    public static Alarm of(AlarmType alarmType, User user, Long fromUserId, Long fromTargetId, String text) {
+        return Alarm.builder()
+                .alarmType(alarmType)
+                .user(user)
+                .fromUserId(fromUserId)
+                .fromTargetId(fromTargetId)
+                .text(text)
+                .build();
+    }
 }

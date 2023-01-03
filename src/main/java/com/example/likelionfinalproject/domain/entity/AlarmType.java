@@ -9,5 +9,5 @@ public enum AlarmType {
     NEW_COMMENT_ON_POST("new comment!"),
     NEW_LIKE_ON_POST("new like!");
 
-    private String alarmType;
+    private String alarmText;
 }
