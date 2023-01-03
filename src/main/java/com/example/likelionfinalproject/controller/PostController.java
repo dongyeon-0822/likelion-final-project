@@ -1,9 +1,13 @@
 package com.example.likelionfinalproject.controller;
 
+import com.example.likelionfinalproject.domain.dto.CommentDto;
 import com.example.likelionfinalproject.domain.dto.PostDto;
+import com.example.likelionfinalproject.domain.request.CommentRequest;
 import com.example.likelionfinalproject.domain.request.PostRequest;
+import com.example.likelionfinalproject.domain.response.CommentResponse;
 import com.example.likelionfinalproject.domain.response.PostResponse;
 import com.example.likelionfinalproject.domain.response.Response;
+import com.example.likelionfinalproject.service.CommentService;
 import com.example.likelionfinalproject.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,7 +21,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
+    private final CommentService commentService;
 
+    // Post CRUD
     @PostMapping("")
     public ResponseEntity<Response> addPost(Authentication authentication, @RequestBody PostRequest postRequest) {
         PostDto postDto = postService.addPost(authentication.getName(), postRequest);
@@ -47,4 +53,12 @@ public class PostController {
         Long deletedPostId = postService.deletePost(authentication.getName(), id);
         return ResponseEntity.ok().body(Response.success(new PostResponse("포스트 삭제 완료", deletedPostId)));
     }
+
+    // Comment CRUD
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<Response> addComment(Authentication authentication, @PathVariable Long id, @RequestBody CommentRequest commentRequest) {
+        CommentDto commentDto = commentService.addComment(authentication.getName(), id, commentRequest);
+        return ResponseEntity.ok().body(Response.success(CommentResponse.toCommentResponse(commentDto)));
+    }
+
 }
