@@ -69,4 +69,13 @@ public class PostService {
         Page<PostDto> postDtoPage = postPage.map(post -> PostDto.toPostDto(post));
         return postDtoPage;
     }
+
+    public Page<PostDto> getMyFeed(Pageable pageable, String userName) {
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(()-> new AppException(ErrorCode.USERNAME_NOT_FOUND, ErrorCode.USERNAME_NOT_FOUND.getMessage()));
+
+        Page<Post> postPage = postRepository.findAllByUser(pageable, user);
+        Page<PostDto> postDtoPage = postPage.map(post -> PostDto.toPostDto(post));
+        return postDtoPage;
+    }
 }
