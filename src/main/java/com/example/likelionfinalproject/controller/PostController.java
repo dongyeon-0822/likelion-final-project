@@ -73,4 +73,10 @@ public class PostController {
         CommentDto commentDto = commentService.getComment(postId, commentId);
         return ResponseEntity.ok().body(Response.success(CommentResponse.toCommentResponse(commentDto)));
     }
+
+    @PutMapping("/{postId}/comments/{commentId}")
+    public ResponseEntity<Response> editComment(Authentication authentication, @PathVariable Long postId, @PathVariable Long commentId, @RequestBody CommentRequest commentRequest) {
+        CommentDto commentDto = commentService.editComment(authentication.getName(), postId, commentId, commentRequest);
+        return ResponseEntity.ok().body(Response.success(CommentResponse.toCommentResponse(commentDto)));
+    }
 }

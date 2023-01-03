@@ -47,4 +47,20 @@ public class CommentService {
         Page<CommentDto> commentDtoPage = commentPage.map(comment -> CommentDto.toCommentDto(comment));
         return commentDtoPage;
     }
+
+    public CommentDto editComment(String userName, Long postId, Long commentId, CommentRequest commentRequest) {
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(()-> new AppException(ErrorCode.USERNAME_NOT_FOUND, ErrorCode.USERNAME_NOT_FOUND.getMessage()));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(()-> new AppException(ErrorCode.POST_NOT_FOUND, ErrorCode.POST_NOT_FOUND.getMessage()));
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(()-> new AppException(ErrorCode.COMMENT_NOT_FOUND, ErrorCode.COMMENT_NOT_FOUND.getMessage()));
+        if (!user.getUserId().equals(comment.getUser().getUserId())) {
+            throw new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage());
+        }
+
+        comment.setComment(commentRequest.getComment());
+        Comment editedComment = commentRepository.save(comment);
+        return CommentDto.toCommentDto(editedComment);
+    }
 }
