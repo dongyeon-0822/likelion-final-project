@@ -31,4 +31,11 @@ public class LikeService {
                     });
         likeRepository.save(Likes.of(user,post));
     }
+
+    public Long countLikes(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(()-> new AppException(ErrorCode.POST_NOT_FOUND, ErrorCode.POST_NOT_FOUND.getMessage()));
+        Long likes = likeRepository.countByPost(post);
+        return likes;
+    }
 }

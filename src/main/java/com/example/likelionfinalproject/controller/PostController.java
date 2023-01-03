@@ -96,4 +96,9 @@ public class PostController {
         likeService.likePost(authentication.getName(),postId);
         return ResponseEntity.ok().body(Response.success("좋아요를 눌렀습니다"));
     }
+    @GetMapping("{postId}/likes")
+    public ResponseEntity<Response> countLikes(@PathVariable Long postId) {
+        Long likes = likeService.countLikes(postId);
+        return ResponseEntity.ok().body(Response.success(likes));
+    }
 }
