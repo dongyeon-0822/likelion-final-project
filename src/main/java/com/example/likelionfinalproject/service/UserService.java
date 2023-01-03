@@ -1,15 +1,20 @@
 package com.example.likelionfinalproject.service;
 
+import com.example.likelionfinalproject.domain.entity.Alarm;
 import com.example.likelionfinalproject.domain.entity.User;
+import com.example.likelionfinalproject.domain.response.AlarmResponse;
 import com.example.likelionfinalproject.domain.response.UserJoinResponse;
 import com.example.likelionfinalproject.domain.response.UserLoginResponse;
 import com.example.likelionfinalproject.exception.AppException;
 import com.example.likelionfinalproject.exception.ErrorCode;
+import com.example.likelionfinalproject.repository.AlarmRepository;
 import com.example.likelionfinalproject.repository.UserRepository;
 import com.example.likelionfinalproject.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +24,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
+    private final AlarmRepository alarmRepository;
 
     @Value("${jwt.token.secret}")
     private String key;
@@ -52,5 +58,13 @@ public class UserService {
         // 두가지 확인 중 예외 안났으면 Token 발행
         String token = JwtTokenUtil.createToken(selectedUser.getUserName(), key, expireTimeMs);
         return new UserLoginResponse(token);
+    }
+
+    public Page<AlarmResponse> getAlarms(String userName, Pageable pageable) {
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, String.format("%s는 가입된 적이 없습니다.", userName)));
+        Page<Alarm> alarmPage = alarmRepository.findAllByUser(user, pageable);
+        Page<AlarmResponse> alarmResponses = alarmPage.map(alarm -> AlarmResponse.toAlarmResponse(alarm));
+        return alarmResponses;
     }
 }
