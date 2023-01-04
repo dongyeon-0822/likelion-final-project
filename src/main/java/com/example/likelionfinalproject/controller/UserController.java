@@ -1,18 +1,20 @@
 package com.example.likelionfinalproject.controller;
 
+import com.example.likelionfinalproject.domain.dto.PostDto;
 import com.example.likelionfinalproject.domain.entity.User;
 import com.example.likelionfinalproject.domain.request.UserJoinRequest;
 import com.example.likelionfinalproject.domain.request.UserLoginRequest;
+import com.example.likelionfinalproject.domain.response.AlarmResponse;
 import com.example.likelionfinalproject.domain.response.Response;
 import com.example.likelionfinalproject.domain.response.UserJoinResponse;
 import com.example.likelionfinalproject.domain.response.UserLoginResponse;
 import com.example.likelionfinalproject.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,5 +33,11 @@ public class UserController {
     public ResponseEntity<Response> login(@RequestBody UserLoginRequest dto) {
         UserLoginResponse userLoginResponse = userService.login(dto.getUserName(), dto.getPassword());
         return ResponseEntity.ok().body(Response.success(userLoginResponse));
+    }
+
+    @GetMapping("/alarms")
+    public ResponseEntity<Response> getAlarms(Authentication authentication, Pageable pageable) {
+        Page<AlarmResponse> alarms = userService.getAlarms(authentication.getName(), pageable);
+        return ResponseEntity.ok().body(Response.success(alarms));
     }
 }

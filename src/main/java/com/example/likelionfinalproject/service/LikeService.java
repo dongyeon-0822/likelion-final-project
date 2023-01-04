@@ -1,10 +1,9 @@
 package com.example.likelionfinalproject.service;
 
-import com.example.likelionfinalproject.domain.entity.Likes;
-import com.example.likelionfinalproject.domain.entity.Post;
-import com.example.likelionfinalproject.domain.entity.User;
+import com.example.likelionfinalproject.domain.entity.*;
 import com.example.likelionfinalproject.exception.AppException;
 import com.example.likelionfinalproject.exception.ErrorCode;
+import com.example.likelionfinalproject.repository.AlarmRepository;
 import com.example.likelionfinalproject.repository.LikeRepository;
 import com.example.likelionfinalproject.repository.PostRepository;
 import com.example.likelionfinalproject.repository.UserRepository;
@@ -17,6 +16,7 @@ public class LikeService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
+    private final AlarmRepository alarmRepository;
 
     public void likePost(String userName, Long postId) {
         User user = userRepository.findByUserName(userName)
@@ -29,6 +29,7 @@ public class LikeService {
                     .ifPresent(likes -> {
                         throw new AppException(ErrorCode.DUPLICATED_LIKES, ErrorCode.DUPLICATED_LIKES.getMessage());
                     });
+        alarmRepository.save(Alarm.of(AlarmType.NEW_LIKE_ON_POST, post.getUser(), user.getUserId(), postId, AlarmType.NEW_LIKE_ON_POST.getAlarmText()));
         likeRepository.save(Likes.of(user,post));
     }
 
