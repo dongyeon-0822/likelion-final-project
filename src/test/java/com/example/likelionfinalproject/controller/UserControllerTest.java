@@ -1,7 +1,9 @@
 package com.example.likelionfinalproject.controller;
 
+import com.example.likelionfinalproject.domain.entity.AlarmType;
 import com.example.likelionfinalproject.domain.request.UserJoinRequest;
 import com.example.likelionfinalproject.domain.request.UserLoginRequest;
+import com.example.likelionfinalproject.domain.response.AlarmResponse;
 import com.example.likelionfinalproject.domain.response.UserJoinResponse;
 import com.example.likelionfinalproject.domain.response.UserLoginResponse;
 import com.example.likelionfinalproject.exception.AppException;
@@ -13,14 +15,22 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -133,5 +143,47 @@ class UserControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.result").exists())
                 .andExpect(jsonPath("$.result.message").exists());
+    }
+
+    @Test
+    @DisplayName("알람목록 조회 성공")
+    @WithMockUser
+    void getAlarms_success() throws Exception {
+        AlarmResponse alarmResponse = AlarmResponse.builder()
+                .id(1l)
+                .alarmType(AlarmType.NEW_COMMENT_ON_POST)
+                .targetId(1l)
+                .fromUserId(1l)
+                .text("text")
+                .createdAt(LocalDateTime.now())
+                .build();
+        Page<AlarmResponse> alarmResponses = new PageImpl<>(List.of(alarmResponse));
+
+        when(userService.getAlarms(any(),any()))
+                .thenReturn(alarmResponses);
+
+        mockMvc.perform(get("/api/v1/users/alarms")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").exists())
+                .andExpect(jsonPath("$.result.content[0].id").exists());
+    }
+
+    @Test
+    @DisplayName("알람목록 조회 실패 - 로그인하지 않은 경우")
+    @WithAnonymousUser
+    void getAlarms_fail() throws Exception {
+        Page<AlarmResponse> alarmResponses = Page.empty();
+
+        when(userService.getAlarms(any(),any()))
+                .thenReturn(alarmResponses);
+
+        mockMvc.perform(get("/api/v1/users/alarms")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 }
