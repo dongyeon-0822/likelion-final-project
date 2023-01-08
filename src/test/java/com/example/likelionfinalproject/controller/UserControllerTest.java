@@ -82,9 +82,10 @@ class UserControllerTest {
     void login_success() throws Exception {
         String userName = "dong";
         String password = "0000";
+        String jwt = "token";
 
         when(userService.login(any(), any()))
-                .thenReturn(new UserLoginResponse("token"));
+                .thenReturn(new UserLoginResponse(jwt));
 
         mockMvc.perform(post("/api/v1/users/login")
                         .with(csrf())
