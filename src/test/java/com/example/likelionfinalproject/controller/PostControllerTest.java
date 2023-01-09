@@ -477,4 +477,86 @@ class PostControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.DATABASE_ERROR.name()));;
     }
+
+    @Test
+    @DisplayName("댓글 삭제 성공")
+    @WithMockUser
+    void deleteComment_success() throws Exception {
+        Long deletedCommentId = 1l;
+
+        when(commentService.deleteComment(any(),any(),any()))
+                .thenReturn(deletedCommentId);
+
+        mockMvc.perform(delete("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.message").value("댓글 삭제 완료"))
+                .andExpect(jsonPath("$.result.id").value(deletedCommentId));
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 1 - 인증 실패")
+    @WithAnonymousUser
+    void deleteComment_fail1() throws Exception {
+        when(commentService.deleteComment(any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage()));
+
+        mockMvc.perform(delete("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 2 - 게시물 존재 X")
+    @WithMockUser
+    void deleteComment_fail2() throws Exception {
+        CommentRequest commentRequest = CommentRequest.builder()
+                .comment("edit comment")
+                .build();
+
+        when(commentService.deleteComment(any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.POST_NOT_FOUND, ErrorCode.POST_NOT_FOUND.getMessage()));
+
+        mockMvc.perform(delete("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(commentRequest)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()));;
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 3 - 작성자 불일치")
+    @WithMockUser
+    void deleteComment_fail3() throws Exception {
+        when(commentService.deleteComment(any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage()));
+
+        mockMvc.perform(delete("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.INVALID_PERMISSION.name()));;
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 4 - DB 에러")
+    @WithMockUser
+    void deleteComment_fail4() throws Exception {
+        when(commentService.deleteComment(any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.DATABASE_ERROR, ErrorCode.DATABASE_ERROR.getMessage()));
+
+        mockMvc.perform(delete("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.DATABASE_ERROR.name()));;
+    }
 }
