@@ -692,4 +692,63 @@ class PostControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()));
     }
+
+    @Test
+    @DisplayName("좋아요 취소 성공")
+    @WithMockUser
+    void unlikePost_success() throws Exception {
+        when(likeService.unlikePost(any(),any()))
+                .thenReturn(1l);
+
+        mockMvc.perform(delete("/api/v1/posts/1/likes")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("좋아요를 취소했습니다"));
+    }
+
+    @Test
+    @DisplayName("좋아요 취소 실패 1 - 로그인하지 않은 경우")
+    @WithAnonymousUser
+    void unlikePost_fail1() throws Exception {
+        when(likeService.unlikePost(any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage()));
+
+        mockMvc.perform(delete("/api/v1/posts/1/likes")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("좋아요 취소 실패 2 - 게시물 존재 X")
+    @WithMockUser
+    void unlikePost_fail2() throws Exception {
+        when(likeService.unlikePost(any(),any()))
+                .thenThrow(new AppException(ErrorCode.POST_NOT_FOUND, ErrorCode.POST_NOT_FOUND.getMessage()));
+
+        mockMvc.perform(delete("/api/v1/posts/1/likes")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()));
+    }
+
+    @Test
+    @DisplayName("좋아요 취소 실패 3 - 좋아요 취소 중복")
+    @WithMockUser
+    void unlikePost_fail3() throws Exception {
+        when(likeService.unlikePost(any(),any()))
+                .thenThrow(new AppException(ErrorCode.LIKES_NOT_FOUND, ErrorCode.LIKES_NOT_FOUND.getMessage()));
+
+        mockMvc.perform(delete("/api/v1/posts/1/likes")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.LIKES_NOT_FOUND.name()));
+    }
 }
