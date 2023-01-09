@@ -93,7 +93,7 @@ public class PostController {
     // Likes
     @PostMapping("{postId}/likes")
     public ResponseEntity<Response> likePost(Authentication authentication, @PathVariable Long postId) {
-        likeService.likePost(authentication.getName(), postId);
+        Long likedId = likeService.likePost(authentication.getName(), postId);
         return ResponseEntity.ok().body(Response.success("좋아요를 눌렀습니다"));
     }
 

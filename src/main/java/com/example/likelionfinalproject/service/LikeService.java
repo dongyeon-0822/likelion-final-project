@@ -18,7 +18,7 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final AlarmRepository alarmRepository;
 
-    public void likePost(String userName, Long postId) {
+    public Long likePost(String userName, Long postId) {
         User user = userRepository.findByUserName(userName)
                 .orElseThrow(()-> new AppException(ErrorCode.USERNAME_NOT_FOUND, ErrorCode.USERNAME_NOT_FOUND.getMessage()));
 
@@ -30,7 +30,8 @@ public class LikeService {
                         throw new AppException(ErrorCode.DUPLICATED_LIKES, ErrorCode.DUPLICATED_LIKES.getMessage());
                     });
         alarmRepository.save(Alarm.of(AlarmType.NEW_LIKE_ON_POST, post.getUser(), user.getUserId(), postId, AlarmType.NEW_LIKE_ON_POST.getAlarmText()));
-        likeRepository.save(Likes.of(user,post));
+        Likes likes = likeRepository.save(Likes.of(user,post));
+        return likes.getId();
     }
 
     public Long countLikes(Long postId) {
