@@ -1,11 +1,16 @@
 package com.example.likelionfinalproject.controller;
 
+import com.example.likelionfinalproject.domain.dto.CommentDto;
 import com.example.likelionfinalproject.domain.dto.PostDto;
+import com.example.likelionfinalproject.domain.request.CommentRequest;
 import com.example.likelionfinalproject.domain.request.PostRequest;
 import com.example.likelionfinalproject.exception.AppException;
 import com.example.likelionfinalproject.exception.ErrorCode;
+import com.example.likelionfinalproject.service.CommentService;
+import com.example.likelionfinalproject.service.LikeService;
 import com.example.likelionfinalproject.service.PostService;
 import com.example.likelionfinalproject.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,6 +47,10 @@ class PostControllerTest {
 
     @MockBean
     PostService postService;
+    @MockBean
+    CommentService commentService;
+    @MockBean
+    LikeService likeService;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -297,5 +306,31 @@ class PostControllerTest {
                 .andDo(print())
                 .andExpect(status().is(ErrorCode.DATABASE_ERROR.getHttpStatus().value()));
 
+    }
+
+    @Test
+    @DisplayName("댓글 작성 성공")
+    @WithMockUser
+    void addComment_success() throws Exception {
+        CommentRequest commentRequest = CommentRequest.builder()
+                .comment("comment")
+                .build();
+        CommentDto commentDto = CommentDto.builder()
+                .id(1l)
+                .comment(commentRequest.getComment())
+                .postId(1l)
+                .build();
+
+        when(commentService.addComment(any(),any(),any()))
+                .thenReturn(commentDto);
+
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(commentRequest)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.comment").exists())
+                .andExpect(jsonPath("$.result.postId").exists());
     }
 }
