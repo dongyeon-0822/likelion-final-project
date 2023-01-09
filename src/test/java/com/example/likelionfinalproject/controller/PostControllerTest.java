@@ -371,4 +371,30 @@ class PostControllerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    @DisplayName("댓글 수정 성공")
+    @WithMockUser
+    void editComment_success() throws Exception {
+        CommentRequest commentRequest = CommentRequest.builder()
+                .comment("edit comment")
+                .build();
+        CommentDto commentDto = CommentDto.builder()
+                .id(1l)
+                .comment(commentRequest.getComment())
+                .postId(1l)
+                .build();
+
+        when(commentService.addComment(any(),any(),any()))
+                .thenReturn(commentDto);
+
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(commentRequest)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.comment").value(commentRequest.getComment()))
+                .andExpect(jsonPath("$.result.postId").exists());
+    }
 }
