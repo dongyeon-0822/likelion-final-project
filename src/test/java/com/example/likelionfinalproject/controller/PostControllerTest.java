@@ -369,7 +369,8 @@ class PostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(commentRequest)))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()));
     }
 
     @Test
@@ -385,10 +386,10 @@ class PostControllerTest {
                 .postId(1l)
                 .build();
 
-        when(commentService.addComment(any(),any(),any()))
+        when(commentService.editComment(any(),any(),any(),any()))
                 .thenReturn(commentDto);
 
-        mockMvc.perform(post("/api/v1/posts/1/comments")
+        mockMvc.perform(put("/api/v1/posts/1/comments/1")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(commentRequest)))
@@ -396,5 +397,84 @@ class PostControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.comment").value(commentRequest.getComment()))
                 .andExpect(jsonPath("$.result.postId").exists());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 1 - 인증 실패")
+    @WithAnonymousUser
+    void editComment_fail1() throws Exception {
+        CommentRequest commentRequest = CommentRequest.builder()
+                .comment("edit comment")
+                .build();
+
+        when(commentService.editComment(any(),any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage()));
+
+        mockMvc.perform(put("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(commentRequest)))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 2 - 게시물 존재 X")
+    @WithMockUser
+    void editComment_fail2() throws Exception {
+        CommentRequest commentRequest = CommentRequest.builder()
+                .comment("edit comment")
+                .build();
+
+        when(commentService.editComment(any(),any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.POST_NOT_FOUND, ErrorCode.POST_NOT_FOUND.getMessage()));
+
+        mockMvc.perform(put("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(commentRequest)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()));;
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 3 - 작성자 불일치")
+    @WithMockUser
+    void editComment_fail3() throws Exception {
+        CommentRequest commentRequest = CommentRequest.builder()
+                .comment("edit comment")
+                .build();
+
+        when(commentService.editComment(any(),any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage()));
+
+        mockMvc.perform(put("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(commentRequest)))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.INVALID_PERMISSION.name()));;
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 4 - DB 에러")
+    @WithMockUser
+    void editComment_fail4() throws Exception {
+        CommentRequest commentRequest = CommentRequest.builder()
+                .comment("edit comment")
+                .build();
+
+        when(commentService.editComment(any(),any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.DATABASE_ERROR, ErrorCode.DATABASE_ERROR.getMessage()));
+
+        mockMvc.perform(put("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(commentRequest)))
+                .andDo(print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.DATABASE_ERROR.name()));;
     }
 }
