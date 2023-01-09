@@ -29,6 +29,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -570,7 +571,7 @@ class PostControllerTest {
                         .content(objectMapper.writeValueAsBytes(commentRequest)))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()));;
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()));
     }
 
     @Test
@@ -601,5 +602,64 @@ class PostControllerTest {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.DATABASE_ERROR.name()));;
+    }
+
+    @Test
+    @DisplayName("좋아요 누르기 성공")
+    @WithMockUser
+    void likePost_success() throws Exception {
+        when(likeService.likePost(any(),any()))
+                .thenReturn(1l);
+
+        mockMvc.perform(post("/api/v1/posts/1/likes")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("좋아요를 눌렀습니다"));
+    }
+
+    @Test
+    @DisplayName("좋아요 누르기 실패 1 - 로그인하지 않은 경우")
+    @WithAnonymousUser
+    void likePost_fail1() throws Exception {
+        when(likeService.likePost(any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage()));
+
+        mockMvc.perform(post("/api/v1/posts/1/likes")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("좋아요 누르기 실패 2 - 게시물 존재 X")
+    @WithMockUser
+    void likePost_fail2() throws Exception {
+        when(likeService.likePost(any(),any()))
+                .thenThrow(new AppException(ErrorCode.POST_NOT_FOUND, ErrorCode.POST_NOT_FOUND.getMessage()));
+
+        mockMvc.perform(post("/api/v1/posts/1/likes")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()));
+    }
+
+    @Test
+    @DisplayName("좋아요 누르기 실패 3 - 좋아요 중복")
+    @WithMockUser
+    void likePost_fail3() throws Exception {
+        when(likeService.likePost(any(),any()))
+                .thenThrow(new AppException(ErrorCode.DUPLICATED_LIKES, ErrorCode.DUPLICATED_LIKES.getMessage()));
+
+        mockMvc.perform(post("/api/v1/posts/1/likes")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.DUPLICATED_LIKES.name()));
     }
 }
