@@ -659,7 +659,37 @@ class PostControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isNotFound())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.DUPLICATED_LIKES.name()));
+    }
+
+    @Test
+    @DisplayName("좋아요 개수조회 성공")
+    @WithMockUser
+    void countLikes_success() throws Exception {
+        when(likeService.countLikes(any()))
+                .thenReturn(0l);
+
+        mockMvc.perform(get("/api/v1/posts/1/likes")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value(0));
+    }
+
+    @Test
+    @DisplayName("좋아요 개수조회 실패 - 게시물 존재 X")
+    @WithMockUser
+    void countLikes_fail() throws Exception {
+        when(likeService.countLikes(any()))
+                .thenThrow(new AppException(ErrorCode.POST_NOT_FOUND, ErrorCode.POST_NOT_FOUND.getMessage()));
+
+        mockMvc.perform(get("/api/v1/posts/1/likes")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()));
     }
 }
