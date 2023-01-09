@@ -333,4 +333,42 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.result.comment").exists())
                 .andExpect(jsonPath("$.result.postId").exists());
     }
+
+    @Test
+    @DisplayName("댓글 작성 실패 1 - 로그인 하지 않은 경우")
+    @WithAnonymousUser
+    void addComment_fail1() throws Exception {
+        CommentRequest commentRequest = CommentRequest.builder()
+                .comment("comment")
+                .build();
+
+        when(commentService.addComment(any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage()));
+
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(commentRequest)))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("댓글 작성 실패 2 - 게시물 존재 X")
+    @WithMockUser
+    void addComment_fail2() throws Exception {
+        CommentRequest commentRequest = CommentRequest.builder()
+                .comment("comment")
+                .build();
+
+        when(commentService.addComment(any(),any(),any()))
+                .thenThrow(new AppException(ErrorCode.POST_NOT_FOUND, ErrorCode.POST_NOT_FOUND.getMessage()));
+
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(commentRequest)))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
 }
