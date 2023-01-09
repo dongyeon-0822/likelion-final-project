@@ -18,16 +18,14 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -371,6 +369,51 @@ class PostControllerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()));
+    }
+
+    @Test
+    @DisplayName("댓글리스트 조회 성공")
+    @WithMockUser
+    void getCommentList_success() throws Exception {
+        CommentDto commentDto = CommentDto.builder()
+                .id(1l)
+                .comment("comment")
+                .postId(1l)
+                .build();
+        Page<CommentDto> commentDtoPage = new PageImpl<>(List.of(commentDto));
+
+        when(commentService.getCommentList(any(),any()))
+                .thenReturn(commentDtoPage);
+
+        mockMvc.perform(get("/api/v1/posts/1/comments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.content[0].comment").exists())
+                .andExpect(jsonPath("$.result.content[0].postId").exists());
+    }
+
+    @Test
+    @DisplayName("댓글 조회 성공")
+    @WithMockUser
+    void getComment_success() throws Exception {
+        CommentDto commentDto = CommentDto.builder()
+                .id(1l)
+                .comment("comment")
+                .postId(1l)
+                .build();
+
+        when(commentService.getComment(any(),any()))
+                .thenReturn(commentDto);
+
+        mockMvc.perform(get("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.comment").exists())
+                .andExpect(jsonPath("$.result.postId").exists());
     }
 
     @Test
