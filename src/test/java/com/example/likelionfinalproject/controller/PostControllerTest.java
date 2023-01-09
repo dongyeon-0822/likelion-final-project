@@ -751,4 +751,45 @@ class PostControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.LIKES_NOT_FOUND.name()));
     }
+
+    @Test
+    @DisplayName("마이피드 조회 성공")
+    @WithMockUser
+    void getMyFeed_success() throws Exception {
+        PostDto postDto = PostDto.builder()
+                .id(1l)
+                .title("title")
+                .body("body")
+                .userName("user")
+                .createdAt(LocalDateTime.now())
+                .lastModifiedAt(LocalDateTime.now())
+                .build();
+
+        Page<PostDto> postDtoPage = new PageImpl<>(List.of(postDto));
+
+        when(postService.getMyFeed(any(),any()))
+                .thenReturn(postDtoPage);
+
+        mockMvc.perform(get("/api/v1/posts/my")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.content").exists())
+                .andExpect(jsonPath("$.result.pageable").exists());
+    }
+
+    @Test
+    @DisplayName("마이피드 조회 실패 - 로그인 하지 않은 경우")
+    @WithAnonymousUser
+    void getMyFeed_fail() throws Exception {
+        when(postService.getMyFeed(any(),any()))
+                .thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, ErrorCode.INVALID_PERMISSION.getMessage()));
+
+        mockMvc.perform(get("/api/v1/posts/my")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
 }
