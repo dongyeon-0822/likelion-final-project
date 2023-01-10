@@ -34,10 +34,4 @@ public class UserController {
         UserLoginResponse userLoginResponse = userService.login(dto.getUserName(), dto.getPassword());
         return ResponseEntity.ok().body(Response.success(userLoginResponse));
     }
-
-    @GetMapping("/alarms")
-    public ResponseEntity<Response> getAlarms(Authentication authentication, Pageable pageable) {
-        Page<AlarmResponse> alarms = userService.getAlarms(authentication.getName(), pageable);
-        return ResponseEntity.ok().body(Response.success(alarms));
-    }
 }
