@@ -111,25 +111,29 @@ public class PostController {
 
     // Likes
     @PostMapping("{postId}/likes")
-    public ResponseEntity<Response> likePost(Authentication authentication, @PathVariable Long postId) {
+    @ApiOperation(value = "게시물 좋아요 누르기", notes = "로그인한 사용자만 특정 게시물에 좋아요 누르기 가능")
+    public ResponseEntity<Response> likePost(Authentication authentication, @Parameter(description = "게시물 ID") @PathVariable Long postId) {
         likeService.likePost(authentication.getName(), postId);
         return ResponseEntity.ok().body(Response.success("좋아요를 눌렀습니다"));
     }
 
     @GetMapping("{postId}/likes")
-    public ResponseEntity<Response> countLikes(@PathVariable Long postId) {
+    @ApiOperation(value = "게시물 좋아요 개수 조회", notes = "로그인 유무에 관계없이 특정 게시물에 좋아요 개수 조회 가능")
+    public ResponseEntity<Response> countLikes(@Parameter(description = "게시물 ID") @PathVariable Long postId) {
         Long likes = likeService.countLikes(postId);
         return ResponseEntity.ok().body(Response.success(likes));
     }
 
     @DeleteMapping("{postId}/likes")
-    public ResponseEntity<Response> unlikePost(Authentication authentication, @PathVariable Long postId) {
+    @ApiOperation(value = "게시물 좋아요 취소", notes = "로그인한 사용자만 특정 게시물에 눌렀던 좋아요 취소 가능")
+    public ResponseEntity<Response> unlikePost(Authentication authentication, @Parameter(description = "게시물 ID") @PathVariable Long postId) {
         likeService.unlikePost(authentication.getName(), postId);
         return ResponseEntity.ok().body(Response.success("좋아요를 취소했습니다"));
     }
 
     // My feed
     @GetMapping("/my")
+    @ApiOperation(value = "로그인된 사용자만의 피드 목록 조회", notes = "로그인한 사용자만 자신이 게시한 모든 게시물들을 한페이지에 20개씩 조회 가능")
     public ResponseEntity<Response> getMyFeed(Authentication authentication, Pageable pageable) {
         Page<PostDto> postDtoPage = postService.getMyFeed(pageable, authentication.getName());
         return ResponseEntity.ok().body(Response.success(postDtoPage));
