@@ -11,6 +11,8 @@ import com.example.likelionfinalproject.domain.response.Response;
 import com.example.likelionfinalproject.service.CommentService;
 import com.example.likelionfinalproject.service.LikeService;
 import com.example.likelionfinalproject.service.PostService;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 @RequestMapping("/api/v1/posts")
@@ -30,30 +33,38 @@ public class PostController {
 
     // Post CRUD
     @PostMapping("")
+    @ApiOperation(value = "게시물 작성", notes = "로그인한 사용자만 게시물 작성 가능")
     public ResponseEntity<Response> addPost(Authentication authentication, @RequestBody PostRequest postRequest) {
         PostDto postDto = postService.addPost(authentication.getName(), postRequest);
         return ResponseEntity.ok().body(Response.success(new PostResponse("포스트 등록 완료", postDto.getId())));
     }
 
     @GetMapping("")
+    @ApiOperation(value = "전체 게시물 리스트 조회", notes = "한 페이지에 20개의 게시물 조회")
     public ResponseEntity<Response> getPostList(Pageable pageable) {
         Page<PostDto> postDtoPage = postService.getPostList(pageable);
         return ResponseEntity.ok().body(Response.success(postDtoPage));
     }
 
     @GetMapping("/{id}")
+    @ApiOperation(value = "단일 게시물 조회", notes = "로그인 유무와 관계없이 파라미터로 넘기는 postId의 게시물 조회 가능")
+    @ApiImplicitParam(name = "id", value = "게시물 ID")
     public ResponseEntity<Response> getPost(@PathVariable Long id) {
         PostDto postDto = postService.getPost(id);
         return ResponseEntity.ok().body(Response.success(postDto));
     }
 
     @PutMapping("/{id}")
+    @ApiOperation(value = "게시물 수정", notes = "로그인한 사용자와 게시물 작성자가 동일할 때 수정 가능")
+    @ApiImplicitParam(name = "id", value = "게시물 ID")
     public ResponseEntity<Response> editPost(Authentication authentication, @PathVariable Long id, @RequestBody PostRequest postRequest) {
         PostDto postDto = postService.editPost(authentication.getName(), id, postRequest);
         return ResponseEntity.ok().body(Response.success(new PostResponse("포스트 수정 완료", postDto.getId())));
     }
 
     @DeleteMapping("/{id}")
+    @ApiOperation(value = "게시물 삭제", notes = "로그인한 사용자와 게시물 작성자가 동일할 때 삭제 가능")
+    @ApiImplicitParam(name = "id", value = "게시물 ID")
     public ResponseEntity<Response> deletePost(Authentication authentication, @PathVariable Long id) {
         Long deletedPostId = postService.deletePost(authentication.getName(), id);
         return ResponseEntity.ok().body(Response.success(new PostResponse("포스트 삭제 완료", deletedPostId)));
