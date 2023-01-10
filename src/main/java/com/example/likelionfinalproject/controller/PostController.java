@@ -13,6 +13,7 @@ import com.example.likelionfinalproject.service.LikeService;
 import com.example.likelionfinalproject.service.PostService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -72,31 +73,38 @@ public class PostController {
 
     // Comment CRUD
     @PostMapping("/{postId}/comments")
+    @ApiOperation(value = "댓글 작성", notes = "로그인한 사용자만 특정 게시물에 댓글 작성 가능")
+    @ApiImplicitParam(name = "postId", value = "게시물 ID")
     public ResponseEntity<Response> addComment(Authentication authentication, @PathVariable Long postId, @RequestBody CommentRequest commentRequest) {
         CommentDto commentDto = commentService.addComment(authentication.getName(), postId, commentRequest);
         return ResponseEntity.ok().body(Response.success(CommentResponse.toCommentResponse(commentDto)));
     }
 
     @GetMapping("/{postId}/comments")
+    @ApiOperation(value = "댓글리스트 조회", notes = "로그인 유무에 관계없이 특정 게시물에 달린 모든 댓글들을 한 페이지에 10개씩 조회 가능")
+    @ApiImplicitParam(name = "postId", value = "게시물 ID")
     public ResponseEntity<Response> getCommentList(@PageableDefault(size = 10) Pageable pageable, @PathVariable Long postId) {
         Page<CommentDto> CommentDtoPage = commentService.getCommentList(pageable, postId);
         return ResponseEntity.ok().body(Response.success(CommentDtoPage));
     }
 
     @GetMapping("/{postId}/comments/{commentId}")
-    public ResponseEntity<Response> getComment(@PathVariable Long postId, @PathVariable Long commentId) {
+    @ApiOperation(value = "댓글 조회", notes = "로그인 유무에 관계없이 특정 게시물에 달린 특정 댓글 조회 가능")
+    public ResponseEntity<Response> getComment(@Parameter(description = "게시물 ID") @PathVariable Long postId, @Parameter(description = "댓글 Id") @PathVariable Long commentId) {
         CommentDto commentDto = commentService.getComment(postId, commentId);
         return ResponseEntity.ok().body(Response.success(CommentResponse.toCommentResponse(commentDto)));
     }
 
     @PutMapping("/{postId}/comments/{commentId}")
-    public ResponseEntity<Response> editComment(Authentication authentication, @PathVariable Long postId, @PathVariable Long commentId, @RequestBody CommentRequest commentRequest) {
+    @ApiOperation(value = "댓글 수정", notes = "로그인한 사용자와 댓글 작성자가 동일할 때 수정 가능")
+    public ResponseEntity<Response> editComment(Authentication authentication, @Parameter(description = "게시물 ID") @PathVariable Long postId, @Parameter(description = "댓글 Id") @PathVariable Long commentId, @RequestBody CommentRequest commentRequest) {
         CommentDto commentDto = commentService.editComment(authentication.getName(), postId, commentId, commentRequest);
         return ResponseEntity.ok().body(Response.success(CommentResponse.toCommentResponse(commentDto)));
     }
 
     @DeleteMapping("{postId}/comments/{commentId}")
-    public ResponseEntity<Response> deleteComment(Authentication authentication, @PathVariable Long postId, @PathVariable Long commentId) {
+    @ApiOperation(value = "댓글 삭제", notes = "로그인한 사용자와 댓글 작성자가 동일할 때 삭제 가능")
+    public ResponseEntity<Response> deleteComment(Authentication authentication, @Parameter(description = "게시물 ID") @PathVariable Long postId, @Parameter(description = "댓글 Id") @PathVariable Long commentId) {
         Long deletedCommentId = commentService.deleteComment(authentication.getName(), postId, commentId);
         return ResponseEntity.ok().body(Response.success(new CommentDeleteResponse("댓글 삭제 완료", deletedCommentId)));
     }
