@@ -3,8 +3,10 @@ package com.example.likelionfinalproject.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.ApiKey;
 import springfox.documentation.service.AuthorizationScope;
 import springfox.documentation.service.SecurityReference;
@@ -22,6 +24,7 @@ public class SwaggerConfig {
         return new Docket(DocumentationType.OAS_30)
                 .securityContexts(Arrays.asList(securityContext()))
                 .securitySchemes(Arrays.asList(apiKey()))
+                .apiInfo(apiInfo())
                 .select()
                 .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any())
@@ -31,6 +34,13 @@ public class SwaggerConfig {
     private SecurityContext securityContext() {
         return SecurityContext.builder()
                 .securityReferences(defaultAuth())
+                .build();
+    }
+
+    public ApiInfo apiInfo() {
+        return new ApiInfoBuilder()
+                .title("MutsaSNS")
+                .description("MutsaSNS(멋사스네스) : 글쓰기, 로그인, 피드, 댓글, 좋아요, 알림 기능이 있는 SNS API")
                 .build();
     }
 
