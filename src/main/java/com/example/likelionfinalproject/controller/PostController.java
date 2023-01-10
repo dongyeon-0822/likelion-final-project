@@ -133,7 +133,7 @@ public class PostController {
 
     // My feed
     @GetMapping("/my")
-    @ApiOperation(value = "로그인된 사용자만의 피드 목록 조회", notes = "로그인한 사용자만 자신이 게시한 모든 게시물들을 한페이지에 20개씩 조회 가능")
+    @ApiOperation(value = "피드 목록 조회", notes = "로그인한 사용자만 자신이 게시한 모든 게시물들을 한페이지에 20개씩 조회 가능")
     public ResponseEntity<Response> getMyFeed(Authentication authentication, Pageable pageable) {
         Page<PostDto> postDtoPage = postService.getMyFeed(pageable, authentication.getName());
         return ResponseEntity.ok().body(Response.success(postDtoPage));
