@@ -26,7 +26,7 @@ public class SwaggerConfig {
                 .securitySchemes(Arrays.asList(apiKey()))
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.any())
+                .apis(RequestHandlerSelectors.basePackage("com.example.likelionfinalproject.controller")) // controller api만 보이도록 수정
                 .paths(PathSelectors.any())
                 .build();
     }
